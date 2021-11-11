@@ -15,9 +15,6 @@ case $key in
 	c1="$2"
         c2="$3"
         c3="$4"
-        c4="$5"
-        c5="$6"
-        c6="$7"
 	shift
 	;;
 	-f|--folder)
@@ -28,8 +25,8 @@ case $key in
 	n="$2"
 	shift
 	;;
-	-w|--node)
-        w="$2"
+	-s|--subname)
+        s="$2"
         shift
         ;;
 	-m|--mode)
@@ -40,24 +37,21 @@ esac
 shift
 done
 
-minat=$(( $c1 + $c2 + $c3 + $c4 + $c5 + $c6 ))
-maxat=$(( $minat * 2 ))
-if [[ $m == "simple" ]]; then
-maxat=$(( $minat + 2 ))
-minat=$(( $maxat / 2 ))
-fi
 number=${n:0:1}
+subnumber=${s:0:1}
 
-mkdir $n
-cp -r ../sources/* $n/
+if [[ ! -d $n/$s ]]; then
+mkdir $n/$s
+fi
+cp -r ../sources/* $n/$s/
 
-cat >$n/INPUT.txt<<!
+cat >$n/$s/INPUT.txt<<!
 PARAMETERS EVOLUTIONARY ALGORITHM
 ******************************************
 *      TYPE OF RUN AND SYSTEM            *
 ******************************************
 USPEX : calculationMethod (USPEX, VCNEB, META)
-301   : calculationType (dimension: 0-3; molecule: 0/1; varcomp: 0/1)
+300   : calculationType (dimension: 0-3; molecule: 0/1; varcomp: 0/1)
 1     : AutoFrac
 
 % optType
@@ -70,19 +64,15 @@ $A1 $A2 $A3
 
 % numSpecies
 $c1 $c2 $c3
-$c4 $c5 $c6
 % EndNumSpecies
-
-$minat  : minAt
-$maxat : maxAt
 
 ******************************************
 *               POPULATION               *
 ******************************************
-120   : populationSize (how many individuals per generation)
-140   : initialPopSize
+60   : populationSize (how many individuals per generation)
+80   : initialPopSize
 228   : numGenerations (how many generations shall be calculated)
-20    : stopCrit
+10    : stopCrit
 0     : reoptOld
 0.6   : bestFrac
 ******************************************
@@ -90,10 +80,10 @@ $maxat : maxAt
 ******************************************
 0.40  : fracGene (fraction of generation produced by heredity)
 0.30  : fracRand (fraction of generation produced randomly from space groups)
-0.20  : fracAtomsMut (fraction of the generation produced by softmutation)
-0.10  : fracTrans
-0.00  : fracLatMut (fraction of the generation produced by softmutation)
-0.00  : fracPerm
+0.10  : fracAtomsMut (fraction of the generation produced by softmutation)
+0.00  : fracTrans
+0.10  : fracLatMut (fraction of the generation produced by softmutation)
+0.10  : fracPerm
 *****************************************
 *   DETAILS OF AB INITIO CALCULATIONS   *
 *****************************************
@@ -110,9 +100,9 @@ mpirun vasp_std
 % EndExecutable
 
 1       : whichCluster (0: no-job-script, 1: local submission, 2: remote submission)
-10      : numParallelCalcs
+5      : numParallelCalcs
 200     : ExternalPressure
 !
 
-sed -i "s/jobname/${f}.${number}/" $n/script_submit
-sed -i "s/USPEX/${f}.${number}/" $n/Submission/submitJob_local.py
+sed -i "s/jobname/${f}.${number}.${subnumber}/" $n/$s/script_submit
+sed -i "s/USPEX/${f}.${number}.${subnumber}/" $n/$s/Submission/submitJob_local.py
