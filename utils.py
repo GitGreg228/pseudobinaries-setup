@@ -1,24 +1,53 @@
 import re
 import os
+import json
+import shutil
+
+
+def set_config(path):
+    default_config = {
+        'popsize': 100,
+        'initpopsize': 120,
+        'numgen': 228,
+        'stopcrit': 20,
+        'heredity': 0.4,
+        'rand': 0.3,
+        'atomsmut': 0.1,
+        'latmut': 0.1,
+        'trans': 0.05,
+        'perm': 0.05,
+        'numpar': 5,
+        'press': 200
+    }
+    if os.path.isfile(path):
+        with open(path, 'r') as f:
+            config = json.load(f)
+        config.update({key: value for key, value in default_config.items() if key not in config})
+    else:
+        config = default_config
+    return config
+
+
+def copy_sources(path):
+    sources_path = os.path.join(path, '..', '..', 'sources')
+    if os.path.isdir(sources_path):
+        shutil.copytree(sources_path, path, dirs_exist_ok=True)
 
 
 def analyze_path(path, formula_1, formula_2):
     f = True
     for dirname in sorted(os.listdir(path)):
         if formula_1 in dirname and formula_2 in dirname:
-            print(f'{dirname} is already created')
+            # print(f'{dirname} is already created')
             f = False
             break
     if f:
-        k_lst = list()
-        for dirname in sorted(os.listdir(path)):
-            k_lst.append(dirname[0])
-            
+        if len(os.listdir(path)) == 0:
+            return 1, 0
+        else:
+            return sorted(os.listdir(path))[-1][0], len(os.listdir(path))
     else:
-        return '0'
-
-
-
+        return 0, dirname
 
 
 def system_from_binaries(binaries):
@@ -53,18 +82,18 @@ def formula_to_tuple(formula):
 def generate_input_txt(config):
     numspecies = list()
     for row in config['numspecies']:
-        row_str = str()
+        row_lst = list()
         for each in row:
-            row_str = row_str + str(each)
-        numspecies.append(row_str)
+            row_lst.append(str(each))
+        numspecies.append(' '.join(row_lst))
     numspecies = '\n'.join(numspecies)
     input_txt = f"""PARAMETERS EVOLUTIONARY ALGORITHM
 ******************************************
 *      TYPE OF RUN AND SYSTEM            *
 ******************************************
 USPEX : calculationMethod (USPEX, VCNEB, META)
-{config['calctype']}   : calculationType (dimension: 0-3; molecule: 0/1; varcomp: 0/1)
-1     : AutoFrac
+{config['calctype']} : calculationType (dimension: 0-3; molecule: 0/1; varcomp: 0/1)
+1 : AutoFrac
 
 % optType
 1
@@ -78,7 +107,7 @@ USPEX : calculationMethod (USPEX, VCNEB, META)
 {numspecies}
 % EndNumSpecies
 
-{config['minat']}  : minAt
+{config['minat']} : minAt
 {config['maxat']} : maxAt
 
 ******************************************
@@ -88,8 +117,8 @@ USPEX : calculationMethod (USPEX, VCNEB, META)
 {config['initpopsize']} : initialPopSize
 {config['numgen']} : numGenerations (how many generations shall be calculated)
 {config['stopcrit']} : stopCrit
-0     : reoptOld
-0.6   : bestFrac
+0 : reoptOld
+0.6 : bestFrac
 ******************************************
 *          VARIATION OPERATORS           *
 ******************************************
