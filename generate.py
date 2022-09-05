@@ -67,7 +67,7 @@ class Dir(object):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', type=str, default='examples', help='Path where generate folders')
+    parser.add_argument('-p', type=str, default='.', help='Path where generate folders')
     parser.add_argument('-b', nargs='+', default=[], help='Binary formulas on which generate')
     parser.add_argument('-t', choices=['fixcoms', 'varcomps', 'both'], default='both', help='Which calculation types to generate')
     parser.add_argument('-a', type=int, default=0, help='Additional composition block')
