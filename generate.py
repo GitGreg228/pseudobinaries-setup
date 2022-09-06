@@ -30,14 +30,14 @@ class Dir(object):
         numspecies = list()
         f1 = formula_to_tuple(self.formula_1)
         f2 = formula_to_tuple(self.formula_2)
-        numspecies.append(list(f1) + [0])
+        numspecies.append([f1[0], 0, f1[1]])
         numspecies.append([0] + list(f2))
         if add:
             numspecies.append([0, 0] + [add])
         minat = sum(f1) + sum(f2) + add
         maxat = factor * minat
         self.config = {
-            'calctype': 1,
+            'calctype': 301,
             'system': self.system,
             'numspecies': numspecies,
             'minat': minat,
@@ -52,16 +52,17 @@ class Dir(object):
             with open(os.path.join(self.path, 'INPUT.txt'), 'w') as f:
                 f.write(input_txt)
             if root_dirname == '':
-                abs_path = os.path.dirname(os.path.abspath(os.path.dirname(self.path)))
-                root_dirname = f'{os.path.basename(abs_path)[0]}.{os.path.dirname(self.path)[0]}'
+                path_1 = os.path.abspath(os.path.dirname(self.path))
+                path_2 = os.path.dirname(path_1)
+                root_dirname = f'{os.path.basename(path_2)[0]}.{os.path.basename(path_1)[0]}'
             self.short_name = f'{root_dirname}.{self.k}'
             with open(os.path.join(self.path, 'script_submit'), 'r') as f:
                 file_data = f.read()
-            with open(os.path.join(self.path, 'script_submit'), 'w') as f:
+            with open(os.path.join(self.path, 'script_submit'), 'w+') as f:
                 f.write(file_data.replace('jobname', self.short_name))
             with open(os.path.join(self.path, 'Submission', 'submitJob_local.py'), 'r') as f:
                 file_data = f.read()
-            with open(os.path.join(self.path, 'Submission', 'submitJob_local.py'), 'w') as f:
+            with open(os.path.join(self.path, 'Submission', 'submitJob_local.py'), 'w+') as f:
                 f.write(file_data.replace('USPEX', self.short_name))
 
 
